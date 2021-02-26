@@ -6,8 +6,8 @@ export function Profile() {
   const {
     level,
     levelUp,
-    currentExperience,
     experienceToNextLevel,
+    currentExperience,
   } = useContext(ChallengesContext);
 
   if (currentExperience >= experienceToNextLevel) {

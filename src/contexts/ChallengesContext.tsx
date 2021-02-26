@@ -1,4 +1,4 @@
-import { createContext, useState, ReactNode } from "react";
+import { createContext, useState, ReactNode, useEffect } from "react";
 import challenges from "../../challenges.json";
 
 interface Challenge {
@@ -16,7 +16,7 @@ interface ChallengesContextData {
   activeChallenge: Challenge;
   resetChallenge: () => void;
   experienceToNextLevel: number;
-  resetChallengeSucceeded: () => void;
+  setChallengeSucceeded: () => void;
 }
 
 interface ChallengesProviderProps {
@@ -34,7 +34,19 @@ export function ChallengesProvider({ children }: ChallengesProviderProps) {
 
   const experienceToNextLevel = Math.pow((level + 1) * 4, 2);
 
+  useEffect(() => {
+    Notification.requestPermission();
+  }, []);
+
   function levelUp() {
+    new Audio("/ragnarok_level_up.mp3").play();
+
+    if (Notification.permission === "granted") {
+      new Notification("Novo desafio 🎉", {
+        body: `Parabéns você subiu de nível!`,
+      });
+    }
+
     setLevel(level + 1);
     setCurrentExperience(currentExperience - experienceToNextLevel);
   }
@@ -43,6 +55,14 @@ export function ChallengesProvider({ children }: ChallengesProviderProps) {
     const randomChallengeIndex = Math.floor(Math.random() * challenges.length);
     const challenge = challenges[randomChallengeIndex];
 
+    new Audio("/notification.mp3").play();
+
+    if (Notification.permission === "granted") {
+      new Notification("Novo desafio 🎉", {
+        body: `Valendo ${challenge.amount}xp!`,
+      });
+    }
+
     setActiveChallenge(challenge);
   }
 
@@ -50,7 +70,9 @@ export function ChallengesProvider({ children }: ChallengesProviderProps) {
     setActiveChallenge(null);
   }
 
-  function resetChallengeSucceeded() {
+  function setChallengeSucceeded() {
+    if (!activeChallenge) return;
+
     setChallengesCompleted(challengesCompleted + 1);
     setCurrentExperience(currentExperience + activeChallenge.amount);
     setActiveChallenge(null);
@@ -67,7 +89,7 @@ export function ChallengesProvider({ children }: ChallengesProviderProps) {
         activeChallenge,
         resetChallenge,
         experienceToNextLevel,
-        resetChallengeSucceeded,
+        setChallengeSucceeded,
       }}
     >
       {children}
